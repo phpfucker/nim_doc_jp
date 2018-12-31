@@ -1595,20 +1595,177 @@ echo minus(10, 5) # error   [3]
 * [3] `minus`プロシージャは名前の後ろにアスタリスクがなく、利用不能であるため、エラーになります。
 
 
+## ユーザ入力との対話
+これまでに紹介したもの（基本的なデータ型とコンテナ、制御構文、ループ）を使用して、簡単なプログラムを作成できるようになりました。プログラムをより対話的にするためには、ファイルからデータを読むか、ユーザーに入力を求めるオプションが必要です。
+
+### ファイル読み込み
+Nimコードと同じディレクトリに`people.txt`というテキストファイルがあるとします。内容は下記のとおりです。
+
+```people.txt
+Alice A.
+Bob B.
+Carol C.
+```
+
+プログラム内でファイルの内容を、名前のリスト（シーケンス）として使いたいのです。
+
+```readFromFile.nim
+import strutils
+
+let contents = readFile("people.txt")   [1]
+echo contents
+
+let people = contents.splitLines()      [2]
+echo people
+```
+
+* [1] ファイルの内容を読み込むには、`readFile`プロシージャを使用し、読み込むファイルのパスを指定します（ファイルがNimプログラムと同じディレクトリにある場合は、ファイル名だけで十分です）。結果は複数行の文字列です。
+* [2] 複数行の文字列を文字列に分割するには（各文字列の内容1行すべて）、`strutils`モジュールの`splitLines`を使用します。
+
+```Nim
+Alice A.
+Bob B.
+Carol C.
+                                            [1]
+@["Alice A.", "Bob B.", "Carol C.", ""]     [2]
+```
+
+* [1] 元のファイルの最後に新しい行（末尾の空行）がありました。これも出力されます。
+* [2] そのため、シーケンスは想定より長いです。
+
+最後の新しい行は、ファイルを読み込んだ後に`strutils`から`strip`プロシージャを使用することで解決できます。これは、文字列の先頭と末尾から空白を削除するだけです。空白文字は、単にスペース、改行、スペース、タブなどを作る任意の文字です。
+
+```readFromFile2.nim
+import strutils
+
+let contents = readFile("people.txt").strip()   [1]
+echo contents
+
+let people = contents.splitLines()
+echo people
+```
+
+* [1] `strip` を使えば期待通りの結果が得られます。
+
+```Nim
+Alice A.
+Bob B.
+Carol C.
+@["Alice A.", "Bob B.", "Carol C."]
+```
+
+### ユーザ入力の読み込み
+ユーザと対話したい場合は、入力を受け付け、処理および使用することができなければなりません。[標準入力（stdin）](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin))から読み込むには、`readLine`プロシージャに`stdin`を渡す必要があります。
+
+```interaction1.nim
+echo "Please enter your name:"
+let name = readLine(stdin)        [1]
+
+echo "Hello ", name, ", nice to meet you!"
+```
+
+* [1] `name`の型は文字列だとみなされます。
+
+```Nim
+Please enter your name:
+      [1]     
+```
+
+* [1] ユーザー入力を待っています。名前を入力して`Enter`キーを押すと、プログラムは続行されます。
+
+```Nim
+Please enter your name:
+Alice
+Hello Alice, nice to meet you!
+```
+
+*VS Codeユーザーは通常の方法（Ctrl + Alt + N）で実行することができません。出力ウィンドウではユーザーの入力が許可されていないためです。端末で実行する必要があります。*
+
+### 数字の扱い
+ファイルまたはユーザ入力から読み取ると、常に文字列が返ります。数値を使用したい場合は、文字列を数値に変換する必要があります。再度`strutils`モジュールの`parseInt`を使用して整数に変換するか、`parseFloat`を使用して浮動小数点数に変換します。
+
+```interaction2.nim
+import strutils
+
+echo "生まれた年を入力してください:"
+let yearOfBirth = readLine(stdin).parseInt()  [1]
+
+let age = 2018 - yearOfBirth
+
+echo "あなたは ", age, " 歳です。"
+```
+
+* [1] 文字列を整数に変換します。これで、安心して有効な整数を取得できます。もしユーザーが`'79`や`ninety-three`を入力するとどうなりますか？ 自分で試してみてください。
+
+```Nim
+Please enter your year of birth:
+1934
+You are 84 years old.
+```
+
+Nimコードと同じディレクトリに、以下の内容の`numbers.txt`ファイルがあるとします。
+
+```numbers.txt
+27.3
+98.24
+11.93
+33.67
+55.01
+```
+
+このファイルを読み込み、数の合計と平均を求めたい場合は、このようにします。
+
+```interaction3.nim
+import strutils, sequtils, math        [1]
+
+let
+  strNums = readFile("numbers.txt").strip().splitLines()  [2]
+  nums = strNums.map(parseFloat)       [3]
+
+let
+  sumNums = sum(nums)                  [4]
+  average = sumNums / float(nums.len)  [5]
+
+echo sumNums
+echo average
+```
+
+* [1] 複数のモジュールをインポートしています。`strutils`で`strip`と`splitLines`が使え、`sequtils`で`map`が使え、`math`で`sum`が使えるようになります。
+* [2] 最後の新しい行を取り除き、行を分割して文字列にしています。
+* [3] `map`は、コンテナの各メンバにプロシージャー（この場合は`parseFloat`）を渡して使用します。つまり、各文字列を浮動小数点数に変換して、新しい浮動小数点数型のシーケンスを返します。
+* [4] `math`モジュールの`sum`を使用して、シーケンス内のすべての要素の合計を取得します。
+* [5] `sumNums`が浮動小数点数なので、シーケンスの長さを浮動小数点数に変換する必要があります。
+
+```Nim
+226.15
+45.23
+```
+
+### 演習
+1. 身長と体重をユーザに尋ねて、[BMI](https://en.wikipedia.org/wiki/Body_mass_index)を計算してください。BMI値とカテゴリーを出力してください。
+
+1. [コラッツの問題の演習](https://narimiran.github.io/nim-basics/#_exercises_4)をやり直してください。ユーザーに数を尋ねるようにし、結果のシーケンスを出力してください。
+
+1. 反転したい文字列をユーザに尋ねます。文字列を受け取り、反転したものを返すプロシージャを作成してください。たとえば、ユーザーが`Nim-lang`と入力した場合、プロシージャは`gnal-miN`を返す必要があります。（ヒント：インデックスとカウントダウンを使う）
 
 
+## 結論
+このチュートリアルを締めくくる時間です。願わくば、これが有益でありますように。そしてプログラミング・Nimプログラミング言語での第一歩となりますように。
 
+これらは基本的なものであり、かじっただけですが、簡単なプログラムを作成し、いくつかの簡単なタスクやパズルを解くことができるようになるはずです。 Nimにはもっとたくさんの提供すべきものがあり、願わくば、その可能性を探求し続けますように。
 
+### 次のステップ
+Nimのチュートリアルから学び続けたい場合は、
 
+  * [公式Nimチュートリアル](https://nim-lang.org/docs/tut1.html)
+  * [Nimの例](https://nim-by-example.github.io/)
 
+プログラミングパズルを解きたい場合は、
 
+  * [Advent of Code:](http://adventofcode.com/): 毎年12月に公開される面白いパズルシリーズ。過去のパズルのアーカイブ（2015年以降）が利用可能です。
+  * [Project Euler](https://projecteuler.net/): 主に数学のタスクです。
 
-
-
-
-
-
-
+ハッピーコーディング！
 
 ---
 
