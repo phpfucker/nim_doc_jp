@@ -1508,6 +1508,104 @@ proc plus(x, y: int): int =  [3]
 
 さまざまな引数を渡して呼び出し、すべてのプロシージャを検証してください。
 
+## モジュール
+これまで、新しいNimファイルを始めるたびに、デフォルトで利用可能な機能を使用してきました。これらの機能はモジュールで拡張することができ、ある特定のトピックに対して機能を追加できます。
+
+最も使用されているNimのモジュールは以下の通りです。
+  * `strutils`: 文字列を扱うときの追加機能
+  * `sequtils`: シーケンス用の追加機能
+  * `math`: 数学の関数（対数、平方根、…）、三角法（sin、cos、…）
+  * `times`: 測定したり時間を扱う
+
+  しかし、[標準ライブラリ](https://nim-lang.org/docs/lib.html)内にも、[nimbleパッケージマネージャ](https://nimble.directory/)内にも、多くのモジュールがあります。
+
+### モジュールのインポート
+モジュールとその全機能をインポートしたい場合は、`import <moduleName>`をファイルに記述するだけです。コードが使用するモジュールを把握しやすくするため、一般的は先頭に記述します。
+
+```stringutils.nim
+import strutils                     [1]
+
+let
+  a = "My string with whitespace."
+  b = '!'
+
+echo a.split()                       [2]
+echo a.toUpperAscii()                [3]
+echo b.repeat(5)                     [4]
+```
+
+* [1] [strutils](https://nim-lang.org/docs/strutils.html)のインポート。
+* [2] `strutils`モジュールの`split`を使用。文字列をの単語に分割しています。
+* [3] `toUpperAscii`はすべてのASCII文字を大文字に変換しています。
+* [4] `repeat`も`strutils`モジュールのもので、指定された回数だけ文字または文字列全体を繰り返しています。
+
+```Nim
+@["My", "string", "with", "whitespace."]
+MY STRING WITH WHITESPACE.
+!!!!!
+```
+
+```maths.nim
+import math                   [1]
+
+let
+  c = 30.0 # degrees
+  cRadians = c.degToRad()     [2]
+
+echo cRadians
+echo sin(cRadians).round(2)   [3]
+
+echo 2^5                      [4]
+```
+
+* [1] [math](https://nim-lang.org/docs/math.html)をインポート。
+* [2] `degToRad`を使って角度をラジアンに変換しています。
+* [3] `sin`はラジアンを取ります。 その結果を（やはり`math`モジュールで）丸めて小数点以下2桁までにします。（さもなければ、結果は0.4999999999999999になります）
+* [4] `math`モジュールには、べき乗を計算するための`^`演算子があります。
+
+```Nim
+0.5235987755982988
+0.5
+32
+```
+
+### 独自に作成
+たいてい、プロジェクトのコード量は非常に膨大で、特定の処理を実行する部分に分割するのは理にかなっています。フォルダ内に2つのファイル（`firstFile.nim` と `secondFile.nim`と呼ぶことにします）が共存する場合、一方をモジュールとしてインポートしましょう。
+
+```firstFile.nim
+proc plus*(a, b: int): int =  [1]
+  return a + b
+
+proc minus(a, b: int): int =  [2]
+  return a - b
+```
+
+* [1] `plus`プロシージャの名前の後にあるアスタリスク（`*`）に注意してください。これにより、別のファイルでもこのプロシージャが利用可能になります。
+* [2] 対照に、これはこのファイルをインポートしても利用できません。
+
+```secondFile.nim
+import firstFile            [1] 
+
+echo plus(5, 10)            [2]
+echo minus(10, 5) # error   [3]
+```
+
+* [1] ここで`firstFile.nim`をインポートしています。`.nim`拡張子は不要です。
+* [2] これは正常に動作し、`firstFile`が利用できるように宣言されているので`15`を出力します。
+* [3] `minus`プロシージャは名前の後ろにアスタリスクがなく、利用不能であるため、エラーになります。
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
