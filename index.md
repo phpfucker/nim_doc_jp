@@ -33,3 +33,11 @@ Nimは主要3オペレーティングシステム向けにパッケージを提�
 * 本ページは、Nimのドキュメントページを個人が翻訳したものです。
 * 読みやすさを優先するため、一部意訳している箇所があります。
 * 誤訳等による不利益等、いかなる場合においても責任は負いかねます。
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9988544360621359",
+    enable_page_level_ads: true
+  });
+</script>
